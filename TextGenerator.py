@@ -8,7 +8,6 @@ def myStrip(word):
 
 def insertToWords(text):
     for line in text:
-        line = line
         for word in line.split(" "):
             newword = myStrip(word)
             if newword not in words.keys():
@@ -23,7 +22,6 @@ for filename in glob.glob("*.txt"):
 words = {}  # a dictionary holding each word and how many times it is displayed in the text
 
 try:  # you can change the file paths if you want
-    count = 0
     for file in files:
         with open(file, "r") as text:
             insertToWords(text)
@@ -47,6 +45,33 @@ try:  # you can change the file paths if you want
             x -= 1
     print("5 rarest words: " + str(rarestwords))
 
+    # Graphing
+    graph = {}  # Empty dictionary with words and following words
+
+    def add_vector_to_graph(v1, v2, w):
+        if v1 not in graph:
+            graph[v1] = {}
+        if v2 in graph[v1]:
+            graph[v1][v2] += w
+        else:
+            graph[v1][v2] = w
+
+
+    processed_words = {myStrip(word) for word in words}
+
+    for file in files:
+        with open(file, "r") as text:
+            for line in text:
+                items = line.split()
+                processed_items = [myStrip(item) for item in items]
+                for i in range(len(processed_items)-1):
+                    if processed_items[i] in processed_words:
+                        next_word = processed_items[i+1]
+                        if next_word != "" and next_word != "â€“":
+                            add_vector_to_graph(processed_items[i], next_word, 1)
+
+    formatted_graph = {k: [item for sublist in [[key, val] for key, val in v.items()] for item in sublist] for k, v in
+                       graph.items()}
     # Analyzing user input
     userin = input("Give me a word: ").lower()
     while userin != "q":
@@ -54,6 +79,12 @@ try:  # you can change the file paths if you want
             print("I don't know this word :(")
         else:
             print(words.get(userin))
+            possible_words = formatted_graph.get(userin)
+            try:
+                for i in range(0, 20, 2):
+                    print(userin + " " + possible_words[i])
+            except IndexError:
+                print("No more following words")
         userin = input("Give me another word: ").lower()
 
 except FileNotFoundError:
